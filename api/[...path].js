@@ -1,6 +1,7 @@
 // Vercel serverless proxy: forwards /wp-json/* to the WooCommerce origin.
 // Keeps the storefront same-origin so browser CORS is never involved, and lets
 // the WordPress app password stay server-side via WP_REST_USER/WP_REST_PASSWORD.
+// Root-level catch-all (api/[...path].js) so Vercel reliably registers it.
 const WP_ORIGIN = process.env.WP_ORIGIN || 'https://thelondonhub.co.uk/florencedolls';
 
 export default async function handler(req, res) {
