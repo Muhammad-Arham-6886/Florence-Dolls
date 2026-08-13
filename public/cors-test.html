@@ -1,0 +1,21 @@
+<!doctype html><html><body>
+<h2>CORS probe from localhost:3000 (via Vite proxy)</h2>
+<pre id="out">running...</pre>
+<script>
+async function probe(url, label) {
+  const out = document.getElementById('out');
+  try {
+    const r = await fetch(url, { credentials: 'omit' });
+    const j = await r.json();
+    const n = Array.isArray(j) ? j.length : (j.name || '?');
+    out.textContent += label + ': OK status=' + r.status + ' items=' + n + '\n';
+  } catch (e) {
+    out.textContent += label + ': BLOCKED -> ' + e.message + '\n';
+  }
+}
+(async () => {
+  await probe('/wp-json/wp/v2/posts?per_page=5', 'posts');
+  await probe('/wp-json/wc/store/v1/products?per_page=3', 'products');
+})();
+</script>
+</body></html>

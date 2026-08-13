@@ -1,0 +1,137 @@
+/* ---------- Auth pages ---------- */
+.auth-wrap {
+  max-width: 460px;
+  margin: var(--space-4) auto var(--space-6);
+}
+
+.auth__lead {
+  color: var(--color-ink-soft);
+  margin: 0 0 var(--space-3);
+  font-size: 1.02rem;
+}
+
+.auth-form {
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.auth-form__error {
+  margin: 0;
+  padding: 0.7rem 1rem;
+  background-color: rgba(66, 100, 75, 0.12);
+  border: 1px solid rgba(66, 100, 75, 0.4);
+  color: var(--color-primary-deep);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+}
+
+.auth-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.auth-form__field span {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-ink-soft);
+}
+
+.auth-form__field input {
+  font-family: var(--font-body);
+  font-size: 0.98rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  background-color: var(--color-background);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-form__field input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(66, 100, 75, 0.15);
+}
+
+.auth-form__submit {
+  width: 100%;
+  margin-top: 0.2rem;
+}
+
+.auth__switch {
+  text-align: center;
+  margin-top: var(--space-2);
+  font-size: 0.92rem;
+  color: var(--color-ink-soft);
+}
+
+.auth__switch a {
+  color: var(--color-primary-dark);
+  font-weight: 700;
+}
+
+.auth__switch a:hover {
+  color: var(--color-primary-deep);
+}
+
+/* ---------- Account page ---------- */
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.account-card {
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+}
+
+.account-card__title {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-secondary-dark);
+  margin: 0;
+}
+
+.account-card__value {
+  font-family: var(--font-heading);
+  font-size: 2.4rem;
+  color: var(--color-heading);
+  margin: 0;
+  line-height: 1;
+}
+
+.account-card__email {
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+  word-break: break-word;
+}
+
+.account-card__note {
+  color: var(--color-ink-soft);
+  font-size: 0.88rem;
+  margin: 0 0 var(--space-1);
+}
+
+.account-card .btn {
+  margin-top: 0.3rem;
+}

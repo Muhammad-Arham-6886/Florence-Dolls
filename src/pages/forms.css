@@ -1,0 +1,92 @@
+.center-page {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.forms__title {
+  margin-bottom: var(--space-1);
+}
+
+.contact__lead {
+  max-width: 680px;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: var(--space-5);
+  margin-top: var(--space-3);
+  align-items: start;
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.field__label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.field input,
+.field select,
+.field textarea {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-background);
+  color: var(--color-text);
+  transition: border-color 0.2s ease;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.contact-details h2 {
+  margin-bottom: var(--space-2);
+}
+
+.contact-details p {
+  margin-bottom: var(--space-3);
+}
+
+.trade-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: var(--space-5);
+  margin-top: var(--space-3);
+  align-items: start;
+}
+
+.trade-list {
+  list-style: none;
+  margin: var(--space-3) 0;
+  padding: 0;
+}
+
+.trade-list li {
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+@media (max-width: 760px) {
+  .contact-grid,
+  .trade-grid {
+    grid-template-columns: 1fr;
+  }
+}
