@@ -1,8 +1,12 @@
 {
   "build": {
     "env": {
-      "VITE_WP_REST_URL": "https://thelondonhub.co.uk/florencedolls/wp-json"
+      "VITE_WP_REST_URL": "/wp-json"
     }
   },
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    { "source": "/wp-json/:path*", "destination": "/api/wp/:path*" },
+    { "source": "/wp-comments-post.php", "destination": "/api/wp-comments-post" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }

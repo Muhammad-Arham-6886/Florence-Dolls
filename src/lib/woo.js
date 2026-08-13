@@ -260,7 +260,11 @@ export async function submitProductReview({ productId, name, email, comment, rat
     redirect: 'follow',
     credentials: 'omit',
   });
-  return { ok: res.redirected, url: res.url || '' };
+  // Same-origin requests hit the Vercel proxy (api/wp-comments-post.js), which
+  // answers with { ok: true } when WordPress accepted the review (302) and
+  // { ok: false } when it was rejected in place.
+  const data = await res.json().catch(() => null);
+  return { ok: Boolean(data && data.ok), url: res.url || '' };
 }
 
 // ---- Blog posts (WordPress core REST, public) ----
@@ -374,26 +378,117 @@ export function stockLabel(product) {
 // mutation returns the full, authoritative cart body plus a fresh token, so we
 // always adopt the response instead of trying to read the cart back via GET.
 
+// WooCommerce 9.x headless carts are protected by four rotating headers —
+// Cart-Token, Cart-Hash, Nonce and Nonce-Timestamp — that the Store API
+// returns on every response and expects back on every mutation. We persist
+// them and always echo the latest set. If a mutation returns 401/403 (an
+// expired nonce) we re-ping the cart to get a fresh set and retry once.
+
 const CART_TOKEN_KEY = 'fd_wp_cart_token';
+const CART_SESSION_KEY = 'fd_wp_cart_session';
 
 export function getCartToken() {
   try {
-    return localStorage.getItem(CART_TOKEN_KEY) || null;
+    return getCartSession().token || null;
   } catch {
     return null;
   }
 }
 
-function setCartToken(token) {
+export function getCartSession() {
   try {
-    if (token) {
-      localStorage.setItem(CART_TOKEN_KEY, token);
+    const raw = localStorage.getItem(CART_SESSION_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') {
+        return {
+          token: parsed.token || null,
+          nonce: parsed.nonce || null,
+          nonceTimestamp: parsed.nonceTimestamp || null,
+          cartHash: parsed.cartHash || null,
+        };
+      }
+    }
+    const legacy = localStorage.getItem(CART_TOKEN_KEY);
+    return { token: legacy || null, nonce: null, nonceTimestamp: null, cartHash: null };
+  } catch {
+    return { token: null, nonce: null, nonceTimestamp: null, cartHash: null };
+  }
+}
+
+function saveCartSession(session) {
+  try {
+    const safe = {
+      token: session.token || null,
+      nonce: session.nonce || null,
+      nonceTimestamp: session.nonceTimestamp || null,
+      cartHash: session.cartHash || null,
+    };
+    if (safe.token) {
+      localStorage.setItem(CART_TOKEN_KEY, safe.token);
     } else {
       localStorage.removeItem(CART_TOKEN_KEY);
+    }
+    if (safe.token || safe.nonce || safe.cartHash) {
+      localStorage.setItem(CART_SESSION_KEY, JSON.stringify(safe));
+    } else {
+      localStorage.removeItem(CART_SESSION_KEY);
     }
   } catch {
     /* storage unavailable */
   }
+}
+
+function setCartToken(token) {
+  saveCartSession({ ...getCartSession(), token: token || null });
+}
+
+// Merge a caller-supplied token with the persisted session headers.
+function mergeSession(token) {
+  const stored = getCartSession();
+  return {
+    token: token || stored.token || null,
+    nonce: stored.nonce || null,
+    nonceTimestamp: stored.nonceTimestamp || null,
+    cartHash: stored.cartHash || null,
+  };
+}
+
+function applySessionHeaders(headers, session) {
+  if (session.token) headers['Cart-Token'] = session.token;
+  if (session.cartHash) headers['Cart-Hash'] = session.cartHash;
+  if (session.nonce) headers['Nonce'] = session.nonce;
+  if (session.nonceTimestamp) headers['Nonce-Timestamp'] = session.nonceTimestamp;
+}
+
+function sessionFromResponse(res, token) {
+  const session = {
+    token: res.headers.get('Cart-Token') || token || null,
+    nonce: res.headers.get('Nonce') || null,
+    nonceTimestamp: res.headers.get('Nonce-Timestamp') || null,
+    cartHash: res.headers.get('Cart-Hash') || null,
+  };
+  if (session.token || session.nonce || session.cartHash) saveCartSession(session);
+  return session;
+}
+
+function isNonceProblem(res, json) {
+  if (!res.ok && (res.status === 401 || res.status === 403)) {
+    const code = json && json.code;
+    return (
+      !code ||
+      code === 'woocommerce_rest_missing_nonce' ||
+      code === 'woocommerce_rest_invalid_nonce'
+    );
+  }
+  return false;
+}
+
+async function fetchFreshCartSession() {
+  const headers = {};
+  applySessionHeaders(headers, getCartSession());
+  const res = await fetch(`${STORE_URL}/cart`, { headers, credentials: 'omit' });
+  return sessionFromResponse(res, null);
 }
 
 function slugFromPermalink(permalink) {
@@ -429,20 +524,31 @@ export function parseCart(json) {
 }
 
 async function cartRequest(path, { method = 'GET', body, token } = {}) {
-  const headers = {};
-  if (token) headers['Cart-Token'] = token;
+  let session = mergeSession(token);
+  let headers = {};
+  applySessionHeaders(headers, session);
   const init = { method, headers, credentials: 'omit' };
   if (body) {
     headers['Content-Type'] = 'application/json';
     init.body = JSON.stringify(body);
   }
-  const res = await fetch(`${STORE_URL}/cart${path}`, init);
-  const nextToken = res.headers.get('Cart-Token') || token || null;
+  let res = await fetch(`${STORE_URL}/cart${path}`, init);
+  let json = res.status === 204 ? null : await res.json().catch(() => null);
+  if (isNonceProblem(res, json)) {
+    session = fetchFreshCartSession();
+    headers = {};
+    applySessionHeaders(headers, session);
+    if (body) headers['Content-Type'] = 'application/json';
+    init.headers = headers;
+    init.body = body ? JSON.stringify(body) : undefined;
+    res = await fetch(`${STORE_URL}/cart${path}`, init);
+    json = res.status === 204 ? null : await res.json().catch(() => null);
+  }
+  sessionFromResponse(res, session.token);
   if (!res.ok) {
     throw new Error(`WooCommerce cart API ${res.status}: ${path}`);
   }
-  const json = await res.json();
-  return { cart: parseCart(json), token: nextToken };
+  return { cart: parseCart(json), token: session.token };
 }
 
 export async function initCart() {
@@ -497,16 +603,27 @@ export async function clearCartItems(token) {
 // WordPress. Errors preserve the Store API's { code, message, details } shape.
 
 async function cartRequestRaw(path, { method = 'GET', body, token } = {}) {
-  const headers = {};
-  if (token) headers['Cart-Token'] = token;
+  let session = mergeSession(token);
+  let headers = {};
+  applySessionHeaders(headers, session);
   const init = { method, headers, credentials: 'omit' };
   if (body) {
     headers['Content-Type'] = 'application/json';
     init.body = JSON.stringify(body);
   }
-  const res = await fetch(`${STORE_URL}/cart${path}`, init);
-  const nextToken = res.headers.get('Cart-Token') || token || null;
-  const json = res.status === 204 ? null : await res.json().catch(() => null);
+  let res = await fetch(`${STORE_URL}/cart${path}`, init);
+  let json = res.status === 204 ? null : await res.json().catch(() => null);
+  if (isNonceProblem(res, json)) {
+    session = fetchFreshCartSession();
+    headers = {};
+    applySessionHeaders(headers, session);
+    if (body) headers['Content-Type'] = 'application/json';
+    init.headers = headers;
+    init.body = body ? JSON.stringify(body) : undefined;
+    res = await fetch(`${STORE_URL}/cart${path}`, init);
+    json = res.status === 204 ? null : await res.json().catch(() => null);
+  }
+  sessionFromResponse(res, session.token);
   if (!res.ok) {
     const err = new Error((json && json.message) || `WooCommerce cart API ${res.status}`);
     err.code = (json && json.code) || res.status;
@@ -514,7 +631,7 @@ async function cartRequestRaw(path, { method = 'GET', body, token } = {}) {
     err.status = res.status;
     throw err;
   }
-  return { cart: json, token: nextToken };
+  return { cart: json, token: session.token };
 }
 
 // Read the authoritative live cart (items, totals, shipping packages).
@@ -542,11 +659,17 @@ export function selectCheckoutShippingRate(rateId, token) {
 
 // Place the order. WordPress creates the order and returns its payment result.
 export async function placeCheckoutOrder({ billingAddress, shippingAddress, paymentMethod, token }) {
-  const headers = { 'Content-Type': 'application/json' };
-  if (token) headers['Cart-Token'] = token;
-  const res = await fetch(`${STORE_URL}/checkout`, {
+  let session = mergeSession(token);
+  const build = () => ({
     method: 'POST',
-    headers,
+    headers: Object.assign(
+      { 'Content-Type': 'application/json' },
+      (() => {
+        const h = {};
+        applySessionHeaders(h, session);
+        return h;
+      })()
+    ),
     body: JSON.stringify({
       billing_address: billingAddress,
       shipping_address: shippingAddress,
@@ -554,7 +677,14 @@ export async function placeCheckoutOrder({ billingAddress, shippingAddress, paym
     }),
     credentials: 'omit',
   });
-  const json = await res.json().catch(() => null);
+  let res = await fetch(`${STORE_URL}/checkout`, build());
+  let json = await res.json().catch(() => null);
+  if (isNonceProblem(res, json)) {
+    session = fetchFreshCartSession();
+    res = await fetch(`${STORE_URL}/checkout`, build());
+    json = await res.json().catch(() => null);
+  }
+  sessionFromResponse(res, session.token);
   if (!res.ok) {
     const err = new Error((json && json.message) || `WooCommerce checkout ${res.status}`);
     err.code = (json && json.code) || res.status;
@@ -603,11 +733,10 @@ export const FALLBACK_PAYMENT_METHODS = [
 ];
 
 export async function fetchPaymentMethods() {
-  const headers = getWpAuthHeaders();
-  if (!headers.Authorization) return FALLBACK_PAYMENT_METHODS;
   try {
+    // The Vercel proxy (or the Vite dev proxy) supplies the admin credentials
+    // server-side, so none are sent from the browser.
     const res = await fetch(`${WP_REST_URL}/wc/v3/payment_gateways?per_page=100`, {
-      headers,
       credentials: 'omit',
     });
     if (!res.ok) return FALLBACK_PAYMENT_METHODS;
