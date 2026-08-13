@@ -5,6 +5,7 @@ import { useShop } from '../context/ShopContext';
 import {
   decodeHtml,
   fetchCheckoutCart,
+  syncLocalCartToWp,
   updateCheckoutCustomer,
   selectCheckoutShippingRate,
   placeCheckoutOrder,
@@ -49,7 +50,7 @@ function slugFromPermalink(permalink) {
 }
 
 export default function Checkout() {
-  const { clearCart } = useShop();
+  const { clearCart, cart: shopCart } = useShop();
   const [cart, setCart] = useState(null);
   const [cartError, setCartError] = useState(null);
   const [token, setToken] = useState(() => getCartToken());
@@ -71,15 +72,25 @@ export default function Checkout() {
 
   useEffect(() => {
     let cancelled = false;
-    fetchCheckoutCart(getCartToken())
-      .then(({ cart: nextCart, token: nextToken }) => {
+    const loadCart = async () => {
+      try {
+        const token = getCartToken();
+        // Checkout must operate on the basket the customer actually sees. If the
+        // local basket has items, make the WordPress cart match it first (the
+        // two can drift apart when a session expires or a sync fails); otherwise
+        // just read whatever WordPress has.
+        const { cart: nextCart, token: nextToken } =
+          shopCart && shopCart.length
+            ? await syncLocalCartToWp(shopCart, token)
+            : await fetchCheckoutCart(token);
         if (cancelled) return;
         setCart(nextCart);
         setToken(nextToken);
-      })
-      .catch((err) => {
+      } catch (err) {
         if (!cancelled) setCartError(err.message || 'Could not load your basket.');
-      });
+      }
+    };
+    loadCart();
     fetchPaymentMethods().then((methods) => {
       if (cancelled) return;
       setPaymentMethods(methods);

@@ -597,6 +597,40 @@ export async function clearCartItems(token) {
   return result;
 }
 
+// Make the WordPress Store API cart match the locally-displayed basket. The
+// local basket (fd_cart) is what the customer sees, and the two can drift apart
+// when a cart session expires or a sync fails. Reconcile item-by-item so
+// checkout always operates on the cart the customer actually sees, then return
+// the authoritative cart + a fresh session token.
+export async function syncLocalCartToWp(localItems = [], token) {
+  const local = Array.isArray(localItems) ? localItems : [];
+  const { cart: wpCart } = await cartRequestRaw('', { token });
+  const wpItems = (wpCart && wpCart.items) || [];
+
+  const wpById = new Map(wpItems.map((i) => [String(i.id), i]));
+  const localIds = new Set(local.map((i) => String(i.id)));
+
+  for (const item of local) {
+    const id = item.id != null ? String(item.id) : '';
+    if (!id) continue;
+    const qty = Number(item.qty) || 1;
+    const wpItem = wpById.get(id);
+    if (!wpItem) {
+      await addCartItem(id, qty, token);
+    } else if (Number(wpItem.quantity) !== qty) {
+      await updateCartItem(wpItem.key, qty, token);
+    }
+  }
+
+  for (const wpItem of wpItems) {
+    if (!localIds.has(String(wpItem.id))) {
+      await removeCartItem(wpItem.key, token);
+    }
+  }
+
+  return cartRequestRaw('', { token });
+}
+
 // ---- Checkout (WooCommerce Store API) ----
 // These helpers work against the live Store API cart (the same Cart-Token used
 // by the basket) so totals, shipping rates and the final order all come from

@@ -5,6 +5,7 @@ import {
   updateCartItem,
   removeCartItem,
   clearCartItems,
+  syncLocalCartToWp,
 } from '../lib/woo';
 
 const CartContext = createContext(null);
@@ -39,13 +40,21 @@ export function ShopProvider({ children }) {
   const [toastTimer, setToastTimer] = useState(null);
   const [wpActive, setWpActive] = useState(false);
   const wpTokenRef = useRef(null);
+  const cartRef = useRef(cart);
+
+  useEffect(() => {
+    cartRef.current = cart;
+  }, [cart]);
 
   useEffect(() => save(CART_KEY, cart), [cart]);
   useEffect(() => save(WISH_KEY, wishlist), [wishlist]);
   useEffect(() => save(USER_KEY, user), [user]);
 
   // Connect to the live WooCommerce cart once on load. The cart display keeps
-  // working from localStorage whenever the Store API is unreachable.
+  // working from localStorage whenever the Store API is unreachable. If the
+  // WordPress session cart is empty but the local basket has items (expired
+  // session, failed sync), push the local basket back into WordPress so the
+  // shop basket and checkout always agree.
   useEffect(() => {
     let cancelled = false;
     initCart()
@@ -53,7 +62,15 @@ export function ShopProvider({ children }) {
         if (cancelled) return;
         wpTokenRef.current = token;
         setWpActive(true);
-        if (wpCart.items.length > 0) setCart(wpCart.items);
+        if (wpCart.items.length > 0) {
+          setCart(wpCart.items);
+        } else if (cartRef.current.length > 0) {
+          syncLocalCartToWp(cartRef.current, token)
+            .then(({ cart: synced }) => {
+              if (!cancelled) adoptWpCart(synced.items);
+            })
+            .catch(() => {});
+        }
       })
       .catch(() => {
         if (!cancelled) setWpActive(false);
