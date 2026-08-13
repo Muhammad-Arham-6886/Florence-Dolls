@@ -1,7 +1,8 @@
 // Vercel serverless proxy: forwards /wp-json/* to the WooCommerce origin.
 // Keeps the storefront same-origin so browser CORS is never involved, and lets
 // the WordPress app password stay server-side via WP_REST_USER/WP_REST_PASSWORD.
-// Root-level catch-all (api/[...path].js) so Vercel reliably registers it.
+// Static function name (api/wp-json.js) because Vercel did not register the
+// [...] catch-all file; the API path arrives in the ?path= query param.
 const WP_ORIGIN = process.env.WP_ORIGIN || 'https://thelondonhub.co.uk/florencedolls';
 
 export default async function handler(req, res) {
@@ -17,12 +18,12 @@ export default async function handler(req, res) {
     reqHeaders[key.toLowerCase()] = value;
   }
 
-  const segments = Array.isArray(req.query.path)
-    ? req.query.path
-    : req.query.path
-      ? [req.query.path]
-      : [];
-  const apiPath = segments.join('/');
+  const pathParam = req.query.path;
+  const apiPath = Array.isArray(pathParam)
+    ? pathParam.join('/')
+    : typeof pathParam === 'string'
+      ? pathParam
+      : '';
 
   const qs = Object.entries(req.query)
     .filter(([key]) => key !== 'path')

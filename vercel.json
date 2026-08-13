@@ -5,7 +5,7 @@
     }
   },
   "rewrites": [
-    { "source": "/wp-json/:path*", "destination": "/api/:path*" },
+    { "source": "/wp-json/:path*", "destination": "/api/wp-json?path=:path*" },
     { "source": "/wp-comments-post.php", "destination": "/api/wp-comments-post" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]

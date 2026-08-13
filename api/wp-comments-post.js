@@ -17,22 +17,26 @@ export default async function handler(req, res) {
   }
 
   const ct = reqHeaders['content-type'] || 'application/x-www-form-urlencoded';
-  let bodyStr;
-  if (typeof req.body === 'string') {
-    bodyStr = req.body;
-  } else if (ct.toLowerCase().includes('application/json')) {
-    bodyStr = JSON.stringify(req.body || {});
-  } else {
-    bodyStr = new URLSearchParams(req.body || {}).toString();
+  const isBodyMethod = req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH';
+  let bodyStr = '';
+  if (isBodyMethod) {
+    if (typeof req.body === 'string') {
+      bodyStr = req.body;
+    } else if (ct.toLowerCase().includes('application/json')) {
+      bodyStr = JSON.stringify(req.body || {});
+    } else {
+      bodyStr = new URLSearchParams(req.body || {}).toString();
+    }
   }
 
   try {
-    const upstream = await fetch(`${WP_ORIGIN}/wp-comments-post.php`, {
+    const init = {
       method: req.method || 'POST',
       headers: { 'Content-Type': ct },
-      body: bodyStr,
       redirect: 'manual',
-    });
+    };
+    if (isBodyMethod) init.body = bodyStr;
+    const upstream = await fetch(`${WP_ORIGIN}/wp-comments-post.php`, init);
     const ok = upstream.status >= 300 && upstream.status < 400;
     res.statusCode = 200;
     res.setHeader('content-type', 'application/json');
