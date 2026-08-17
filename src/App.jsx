@@ -18,6 +18,7 @@ import Shipping from './pages/ShippingDelivery';
 import ProductDetail from './pages/ProductDetail';
 import Checkout from './pages/Checkout';
 import CheckoutRedirect from './pages/CheckoutRedirect';
+import OrderReceived from './pages/OrderReceived';
 import NotFound from './pages/NotFound';
 import Basket from './pages/Basket';
 import Wishlist from './pages/Wishlist';
@@ -56,6 +57,7 @@ export default function App() {
         <Route path="/search" element={<Search />} />
         <Route path="/cart-wp" element={<CheckoutRedirect mode="cart" />} />
         <Route path="/checkout" element={<Checkout />} />
+        <Route path="/order-received" element={<OrderReceived />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>

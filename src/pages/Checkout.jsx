@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import SEO from '../components/SEO';
 import { useShop } from '../context/ShopContext';
 import {
@@ -51,6 +51,7 @@ function slugFromPermalink(permalink) {
 
 export default function Checkout() {
   const { clearCart, cart: shopCart } = useShop();
+  const navigate = useNavigate();
   const [cart, setCart] = useState(null);
   const [cartError, setCartError] = useState(null);
   const [token, setToken] = useState(() => getCartToken());
@@ -239,14 +240,28 @@ export default function Checkout() {
           token,
         });
         const result = order && order.payment_result;
+        const snapshotItems = [...(cart && cart.items) || []];
+        const snapshotTotals = cart && cart.totals ? { ...cart.totals } : null;
+        const snapshotShippingRate = shippingOptions.find((r) => r.rate_id === selectedRate) || null;
+        const snapshotPaymentLabel = (paymentMethods.find((m) => m.id === paymentMethod) || {}).title || paymentMethod;
+        const snapshotContact = { ...contact };
         clearCart();
         if (result && result.redirect_url) {
           window.location.assign(result.redirect_url);
           return;
         }
         if (result && result.payment_status === 'success') {
-          setNotice('Thank you — your order has been placed. We will be in touch to arrange payment and delivery.');
-          setCart({ ...cart, items: [], items_count: 0 });
+          navigate('/order-received', {
+            replace: true,
+            state: {
+              order,
+              items: snapshotItems,
+              totals: snapshotTotals,
+              shippingRate: snapshotShippingRate,
+              paymentMethod: snapshotPaymentLabel,
+              contact: snapshotContact,
+            },
+          });
           return;
         }
         setFormError(
@@ -264,7 +279,7 @@ export default function Checkout() {
         setPlacing(false);
       }
     },
-    [cart, selectedRate, paymentMethod, token, shipping, billing, sameAsBilling, contact, clearCart]
+    [cart, selectedRate, paymentMethod, token, shipping, billing, sameAsBilling, contact, clearCart, navigate, shippingOptions, paymentMethods]
   );
 
   const totals = (cart && cart.totals) || null;
