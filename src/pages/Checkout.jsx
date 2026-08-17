@@ -246,11 +246,8 @@ export default function Checkout() {
         const snapshotPaymentLabel = (paymentMethods.find((m) => m.id === paymentMethod) || {}).title || paymentMethod;
         const snapshotContact = { ...contact };
         clearCart();
-        if (result && result.redirect_url) {
-          window.location.assign(result.redirect_url);
-          return;
-        }
-        if (result && result.payment_status === 'success') {
+        const status = result && result.payment_status;
+        if (status === 'success' || status === 'pending') {
           navigate('/order-received', {
             replace: true,
             state: {
@@ -264,9 +261,11 @@ export default function Checkout() {
           });
           return;
         }
-        setFormError(
-          (result && result.payment_status) || 'We could not complete your order. Please try again.'
-        );
+        if (result && result.redirect_url) {
+          window.location.assign(result.redirect_url);
+          return;
+        }
+        setFormError(status || 'We could not complete your order. Please try again.');
       } catch (err) {
         const details = err.details;
         if (details && typeof details === 'object') {
