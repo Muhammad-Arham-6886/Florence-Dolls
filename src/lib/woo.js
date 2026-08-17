@@ -351,7 +351,9 @@ export function formatTotal(total, prices) {
   const symbol = (prices && prices.currency_symbol) || '\u00A3';
   const prefix = (prices && prices.currency_prefix) || '';
   const suffix = (prices && prices.currency_suffix) || '';
-  return `${prefix}${symbol}${total.toFixed(2)}${suffix}`.replace(/^\$\s*/, '');
+  const displayPrefix = prefix ? '' : symbol;
+  const displaySymbol = prefix ? symbol : '';
+  return `${displayPrefix}${displaySymbol}${total.toFixed(2)}${suffix}`.replace(/^\$\s*/, '');
 }
 
 export function isOnSale(product) {
