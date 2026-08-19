@@ -4,6 +4,7 @@
 
 export const SITE = {
   brand: 'Florence Dolls',
+  url: 'florencedolls.co.uk',
   canonical: import.meta.env.VITE_SITE_URL || 'https://florencedolls.co.uk',
   email: 'info@florencedolls.co.uk',
   phone: '01274 400100',
