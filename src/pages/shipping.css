@@ -1,0 +1,88 @@
+/* ---------- Shipping table ---------- */
+
+.shipping-table-wrap {
+  margin: var(--space-2) 0 var(--space-3);
+  overflow-x: hidden;
+}
+
+.shipping-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.shipping-table th,
+.shipping-table td {
+  padding: 0.7rem 0.9rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.shipping-table thead th {
+  background-color: var(--color-primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.shipping-table tbody tr:hover {
+  background-color: var(--color-primary-soft);
+}
+
+.shipping-table tbody td {
+  color: var(--color-text);
+  vertical-align: top;
+}
+
+/* ---- Mobile: card layout (no horizontal scroll) ---- */
+
+@media (max-width: 700px) {
+  .shipping-table thead {
+    display: none;
+  }
+
+  .shipping-table,
+  .shipping-table tbody,
+  .shipping-table tr,
+  .shipping-table td {
+    display: block;
+  }
+
+  .shipping-table tr {
+    background-color: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.8rem 1rem;
+    margin-bottom: 0.7rem;
+    box-shadow: var(--shadow-card);
+  }
+
+  .shipping-table td {
+    padding: 0.25rem 0;
+    border-bottom: none;
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+
+  .shipping-table td::before {
+    content: attr(data-label);
+    display: block;
+    font-weight: 700;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-ink-soft);
+    margin-bottom: 0.15rem;
+  }
+
+  .shipping-table td:last-child {
+    font-weight: 700;
+    color: var(--color-primary-deep);
+    margin-top: 0.3rem;
+    padding-top: 0.3rem;
+    border-top: 1px dashed var(--color-border-strong);
+  }
+}
