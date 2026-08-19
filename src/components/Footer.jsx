@@ -10,7 +10,7 @@ export default function Footer() {
       <div className="container site-footer__inner">
         <div className="site-footer__col site-footer__col--brand">
           <span className="site-footer__name">
-            Florence<em>Dolls</em>
+            Florence <em>Dolls</em>
           </span>
           <p className="site-footer__tagline">
             Genuine reborn dolls, Arias &amp; Llorens collectables and boutique accessories, from a small UK family business.
