@@ -238,16 +238,13 @@ export function ShopProvider({ children }) {
 
   const register = useCallback(
     async ({ name, email, password }) => {
-      const users = load(USERS_KEY) || [];
-      if (users.some((u) => u.email.toLowerCase() === email.toLowerCase())) {
-        return { error: 'An account with that email already exists. Please sign in instead.' };
-      }
       try {
         await registerWpUser({ name, email, password });
       } catch (err) {
         return { error: err.message || 'Could not create your account.' };
       }
-      const nextUsers = [...users, { name, email, password }];
+      const users = load(USERS_KEY) || [];
+      const nextUsers = [...users.filter((u) => u.email.toLowerCase() !== email.toLowerCase()), { name, email, password }];
       save(USERS_KEY, nextUsers);
       setUser({ name, email });
       return { error: null };
