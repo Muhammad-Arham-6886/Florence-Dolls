@@ -795,6 +795,12 @@ export default function Checkout() {
               <dt>Subtotal</dt>
               <dd>{totals ? formatCartMoney(totals.total_items, totals) : '\u2014'}</dd>
             </div>
+            {totals && Number(totals.total_discount) > 0 && (
+              <div className="checkout-summary__row checkout-summary__row--discount">
+                <dt>Discount</dt>
+                <dd>-{formatCartMoney(totals.total_discount, totals)}</dd>
+              </div>
+            )}
             <div className="checkout-summary__row">
               <dt>Delivery</dt>
               <dd>

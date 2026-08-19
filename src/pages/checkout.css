@@ -356,6 +356,10 @@
   color: var(--color-text);
 }
 
+.checkout-summary__row--discount dd {
+  color: #2a7d3f;
+}
+
 .checkout-summary__row--total {
   margin-top: 0.3rem;
   padding-top: var(--space-2);
