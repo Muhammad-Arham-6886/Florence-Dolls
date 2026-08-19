@@ -135,7 +135,8 @@ export default function Basket() {
                     await applyCoupon(couponCode.trim());
                     setCouponCode('');
                   } catch (err) {
-                    setCouponError(err.message || 'Invalid coupon code.');
+                    const msg = err.message || 'Invalid coupon code.';
+                    setCouponError(msg.includes('already been applied') ? 'This coupon is already applied to your basket.' : msg);
                   } finally {
                     setCouponLoading(false);
                   }

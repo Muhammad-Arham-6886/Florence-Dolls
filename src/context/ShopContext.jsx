@@ -10,6 +10,8 @@ import {
   removeCoupon as wpRemoveCoupon,
   normalizeCartItems,
   registerWpUser,
+  fetchCheckoutCart,
+  getCartToken,
 } from '../lib/woo';
 
 const CartContext = createContext(null);
@@ -61,15 +63,20 @@ export function ShopProvider({ children }) {
   // shop basket and checkout always agree.
   useEffect(() => {
     let cancelled = false;
-    initCart()
-      .then(({ cart: wpCart, token }) => {
+    const token = getCartToken();
+    fetchCheckoutCart(token || undefined)
+      .then(({ cart: wpCart, token: nextToken }) => {
         if (cancelled) return;
-        wpTokenRef.current = token;
+        wpTokenRef.current = nextToken;
         setWpActive(true);
-        if (wpCart.items.length > 0) {
-          setCart(wpCart.items);
+        const items = normalizeCartItems(wpCart && wpCart.items);
+        if (items.length > 0) {
+          setCart(items);
+          if (wpCart.coupons && wpCart.coupons.length) {
+            setAppliedCoupons(wpCart.coupons);
+          }
         } else if (cartRef.current.length > 0) {
-          syncLocalCartToWp(cartRef.current, token)
+          syncLocalCartToWp(cartRef.current, nextToken)
             .then(({ cart: synced }) => {
               if (!cancelled) adoptWpCart(synced.items);
             })

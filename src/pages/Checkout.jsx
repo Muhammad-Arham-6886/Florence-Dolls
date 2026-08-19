@@ -121,7 +121,8 @@ export default function Checkout() {
       setCart(updatedCart.cart);
       setCouponCode('');
     } catch (err) {
-      setCouponError(err.message || 'Invalid coupon code.');
+      const msg = err.message || 'Invalid coupon code.';
+      setCouponError(msg.includes('already been applied') ? 'This coupon is already applied to your order.' : msg);
     } finally {
       setCouponLoading(false);
     }
