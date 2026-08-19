@@ -182,7 +182,7 @@ export default function Header() {
     <header className={`site-header ${scrolled ? 'site-header--scrolled' : ''}`}>
       <div className="announce">
         <div className="container announce__inner">
-          <p className="announce__text">All stock held in the UK &middot; Fast {SITE.deliveryWindow} &middot; Genuine Arias &amp; Llorens</p>
+          <p className="announce__text">All stock held in the UK &middot; Fast {SITE.deliveryWindow} &middot; Genuine Arias &amp; Llorens &middot; Save an extra 5% with code: WELCOME5</p>
           <div className="announce__links">
             <a className="announce__link" href={`tel:${SITE.phoneIntl}`}>{SITE.phone}</a>
             <span className="announce__dot" aria-hidden="true" />

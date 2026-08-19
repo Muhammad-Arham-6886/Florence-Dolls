@@ -14,6 +14,8 @@ import {
   getCartToken,
   formatCartMoney,
   formatPrice,
+  applyCoupon as wpApplyCoupon,
+  removeCoupon as wpRemoveCoupon,
 } from '../lib/woo';
 import './checkout.css';
 
@@ -70,6 +72,9 @@ export default function Checkout() {
   const [formError, setFormError] = useState(null);
   const [notice, setNotice] = useState(null);
   const [syncedKey, setSyncedKey] = useState('');
+  const [couponCode, setCouponCode] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -106,6 +111,30 @@ export default function Checkout() {
     const { name, value } = e.target;
     setter((prev) => ({ ...prev, [name]: value }));
   }, []);
+
+  const handleApplyCoupon = useCallback(async () => {
+    if (!couponCode.trim()) return;
+    setCouponLoading(true);
+    setCouponError(null);
+    try {
+      const updatedCart = await wpApplyCoupon(couponCode.trim(), token);
+      setCart(updatedCart.cart);
+      setCouponCode('');
+    } catch (err) {
+      setCouponError(err.message || 'Invalid coupon code.');
+    } finally {
+      setCouponLoading(false);
+    }
+  }, [couponCode, token]);
+
+  const handleRemoveCoupon = useCallback(async (code) => {
+    try {
+      const updatedCart = await wpRemoveCoupon(code, token);
+      setCart(updatedCart.cart);
+    } catch (err) {
+      setCouponError(err.message || 'Could not remove coupon.');
+    }
+  }, [token]);
 
   const contactKey = `${contact.email}|${contact.phone}`;
 
@@ -732,6 +761,35 @@ export default function Checkout() {
               </li>
             ))}
           </ul>
+          {cart && cart.coupons && cart.coupons.length > 0 && (
+            <div className="checkout-coupons">
+              {cart.coupons.map((c) => (
+                <span className="checkout-coupons__tag" key={c.code}>
+                  {c.code.toUpperCase()}
+                  <button type="button" className="checkout-coupons__remove" onClick={() => handleRemoveCoupon(c.code)} aria-label={`Remove coupon ${c.code}`}>&times;</button>
+                </span>
+              ))}
+            </div>
+          )}
+          <div className="checkout-coupon">
+            <input
+              className="checkout-coupon__input"
+              type="text"
+              placeholder="Coupon code"
+              value={couponCode}
+              onChange={(e) => { setCouponCode(e.target.value); setCouponError(null); }}
+              disabled={couponLoading}
+            />
+            <button
+              className="checkout-coupon__btn"
+              type="button"
+              disabled={couponLoading || !couponCode.trim()}
+              onClick={handleApplyCoupon}
+            >
+              {couponLoading ? '…' : 'Apply'}
+            </button>
+          </div>
+          {couponError && <p className="checkout-coupon__error">{couponError}</p>}
           <dl className="checkout-summary__totals">
             <div className="checkout-summary__row">
               <dt>Subtotal</dt>

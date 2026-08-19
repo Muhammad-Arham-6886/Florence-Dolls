@@ -599,6 +599,26 @@ export async function clearCartItems(token) {
   return result;
 }
 
+export async function applyCoupon(code, token) {
+  const result = await cartRequestRaw('/coupon', {
+    method: 'POST',
+    body: { code },
+    token,
+  });
+  if (result.token) setCartToken(result.token);
+  return result;
+}
+
+export async function removeCoupon(code, token) {
+  const result = await cartRequestRaw('/coupon', {
+    method: 'DELETE',
+    body: { code },
+    token,
+  });
+  if (result.token) setCartToken(result.token);
+  return result;
+}
+
 // Make the WordPress Store API cart match the locally-displayed basket. The
 // local basket (fd_cart) is what the customer sees, and the two can drift apart
 // when a cart session expires or a sync fails. Reconcile item-by-item so

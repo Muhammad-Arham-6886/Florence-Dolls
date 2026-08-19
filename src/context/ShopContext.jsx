@@ -6,6 +6,8 @@ import {
   removeCartItem,
   clearCartItems,
   syncLocalCartToWp,
+  applyCoupon as wpApplyCoupon,
+  removeCoupon as wpRemoveCoupon,
 } from '../lib/woo';
 
 const CartContext = createContext(null);
@@ -166,6 +168,34 @@ export function ShopProvider({ children }) {
       .catch(() => {});
   }, [wpActive, adoptWpCart]);
 
+  const [appliedCoupons, setAppliedCoupons] = useState([]);
+
+  const applyCoupon = useCallback(
+    async (code) => {
+      const token = wpTokenRef.current;
+      if (!wpActive || !token) throw new Error('Could not connect to store.');
+      const { cart: wpCart } = await wpApplyCoupon(code, token);
+      adoptWpCart(wpCart.items);
+      setAppliedCoupons(wpCart.coupons || []);
+      notify(`Coupon "${code}" applied`);
+      return wpCart;
+    },
+    [wpActive, adoptWpCart, notify]
+  );
+
+  const removeCoupon = useCallback(
+    async (code) => {
+      const token = wpTokenRef.current;
+      if (!wpActive || !token) throw new Error('Could not connect to store.');
+      const { cart: wpCart } = await wpRemoveCoupon(code, token);
+      adoptWpCart(wpCart.items);
+      setAppliedCoupons(wpCart.coupons || []);
+      notify(`Coupon "${code}" removed`);
+      return wpCart;
+    },
+    [wpActive, adoptWpCart, notify]
+  );
+
   const toggleWishlist = useCallback(
     (product) => {
       setWishlist((prev) => {
@@ -247,6 +277,9 @@ export function ShopProvider({ children }) {
       removeFromCart,
       updateQty,
       clearCart,
+      appliedCoupons,
+      applyCoupon,
+      removeCoupon,
       wishlist,
       toggleWishlist,
       isWishlisted,
@@ -266,6 +299,9 @@ export function ShopProvider({ children }) {
       removeFromCart,
       updateQty,
       clearCart,
+      appliedCoupons,
+      applyCoupon,
+      removeCoupon,
       wishlist,
       toggleWishlist,
       isWishlisted,

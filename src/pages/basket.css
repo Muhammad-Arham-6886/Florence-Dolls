@@ -220,3 +220,100 @@
     margin-top: 0.2rem;
   }
 }
+
+/* ---- Coupon ---- */
+
+.basket-coupons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: var(--space-1);
+}
+
+.basket-coupons__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary-deep);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.basket-coupons__remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--color-primary-dark);
+  padding: 0;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.basket-coupons__remove:hover {
+  opacity: 1;
+}
+
+.basket-coupon {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: var(--space-1);
+}
+
+.basket-coupon__input {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  background-color: var(--color-background);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.basket-coupon__input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(66, 100, 75, 0.15);
+}
+
+.basket-coupon__input:disabled {
+  opacity: 0.5;
+}
+
+.basket-coupon__btn {
+  flex-shrink: 0;
+  padding: 0.65rem 1.2rem;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  background-color: var(--color-primary);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.basket-coupon__btn:hover:not(:disabled) {
+  background-color: var(--color-primary-dark);
+}
+
+.basket-coupon__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.basket-coupon__error {
+  margin: 0.3rem 0 0;
+  font-size: 0.82rem;
+  color: #7d2a20;
+}

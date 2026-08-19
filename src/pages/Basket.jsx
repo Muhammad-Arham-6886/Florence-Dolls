@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import { useShop } from '../context/ShopContext';
@@ -5,7 +6,10 @@ import { formatPrice, formatTotal } from '../lib/woo';
 import './basket.css';
 
 export default function Basket() {
-  const { cart, updateQty, removeFromCart, clearCart, cartTotal } = useShop();
+  const { cart, updateQty, removeFromCart, clearCart, cartTotal, applyCoupon, removeCoupon, appliedCoupons } = useShop();
+  const [couponCode, setCouponCode] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState(null);
 
   const unitPrice = (item) => Number(item.prices?.price || item.prices?.regular_price || 0) / 100;
 
@@ -89,6 +93,48 @@ export default function Basket() {
             <p className="basket-summary__hint">
               Ordering is completed on our secure store, where payment and delivery are arranged together.
             </p>
+
+            {appliedCoupons && appliedCoupons.length > 0 && (
+              <div className="basket-coupons">
+                {appliedCoupons.map((c) => (
+                  <span className="basket-coupons__tag" key={c.code}>
+                    {c.code.toUpperCase()} — {c.total}
+                    <button type="button" className="basket-coupons__remove" onClick={() => removeCoupon(c.code)} aria-label={`Remove coupon ${c.code}`}>&times;</button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <div className="basket-coupon">
+              <input
+                className="basket-coupon__input"
+                type="text"
+                placeholder="Enter coupon code"
+                value={couponCode}
+                onChange={(e) => { setCouponCode(e.target.value); setCouponError(null); }}
+                disabled={couponLoading}
+              />
+              <button
+                className="basket-coupon__btn"
+                type="button"
+                disabled={couponLoading || !couponCode.trim()}
+                onClick={async () => {
+                  setCouponLoading(true);
+                  setCouponError(null);
+                  try {
+                    await applyCoupon(couponCode.trim());
+                    setCouponCode('');
+                  } catch (err) {
+                    setCouponError(err.message || 'Invalid coupon code.');
+                  } finally {
+                    setCouponLoading(false);
+                  }
+                }}
+              >
+                {couponLoading ? 'Applying…' : 'Apply'}
+              </button>
+            </div>
+            {couponError && <p className="basket-coupon__error">{couponError}</p>}
             <div className="basket-summary__actions">
               <Link to="/checkout" className="btn btn-primary">Proceed to checkout</Link>
               <button type="button" className="btn btn-ghost" onClick={clearCart}>
