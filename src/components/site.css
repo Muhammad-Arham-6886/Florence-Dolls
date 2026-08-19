@@ -805,7 +805,7 @@ body {
 
 .site-footer__list a {
   display: inline-block;
-  color: rgba(250, 246, 241, 0.78);
+  color: var(--color-primary);
   font-size: 0.9rem;
   position: relative;
   transition: color 0.2s ease, transform 0.2s ease;
@@ -856,6 +856,16 @@ body {
 
 .site-footer__credit-heart {
   color: var(--color-primary);
+}
+
+.site-footer__credit a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.site-footer__credit a:hover {
+  opacity: 0.8;
 }
 
 @media (max-width: 1080px) {

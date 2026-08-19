@@ -63,7 +63,7 @@ export default function Footer() {
             &copy; {year} {SITE.brand}. All rights reserved. Registered Company No. {SITE.companyNo}. All stock held in the UK.
           </p>
           <p className="site-footer__credit">
-            Designed with <span aria-hidden="true" className="site-footer__credit-heart">&hearts;</span> by WebsiteLift
+            Designed with <span aria-hidden="true" className="site-footer__credit-heart">&hearts;</span> by <a href="https://websitelift.co.uk/" target="_blank" rel="noopener noreferrer">WebsiteLift</a>
           </p>
         </div>
       </div>
