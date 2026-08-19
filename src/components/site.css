@@ -768,7 +768,7 @@ body {
 }
 
 .site-footer__contact-link:hover {
-  color: var(--color-primary);
+  color: #e8b84b;
 }
 
 .site-footer__heading {
@@ -818,14 +818,14 @@ body {
   bottom: -2px;
   width: 100%;
   height: 1px;
-  background-color: var(--color-primary);
+  background-color: #e8b84b;
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.25s ease;
 }
 
 .site-footer__list a:hover {
-  color: var(--color-primary);
+  color: #e8b84b;
   transform: translateX(4px);
 }
 
@@ -865,7 +865,7 @@ body {
 }
 
 .site-footer__credit a:hover {
-  color: var(--color-primary);
+  color: #e8b84b;
 }
 
 @media (max-width: 1080px) {
