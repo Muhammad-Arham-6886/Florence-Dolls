@@ -776,12 +776,6 @@ export function formatCartMoney(minorValue, totals) {
 // retail offline methods so checkout always has a valid option.
 export const FALLBACK_PAYMENT_METHODS = [
   {
-    id: 'bacs',
-    title: 'Direct bank transfer',
-    description:
-      'Make your payment directly into our bank account. Your order is confirmed once the funds arrive.',
-  },
-  {
     id: 'cod',
     title: 'Cash on delivery',
     description: 'Pay in cash when your order is delivered to your door.',
@@ -798,7 +792,7 @@ export async function fetchPaymentMethods() {
     if (!res.ok) return FALLBACK_PAYMENT_METHODS;
     const list = await res.json();
     const enabled = (Array.isArray(list) ? list : []).filter(
-      (g) => g && g.enabled && String(g.enabled) !== 'no'
+      (g) => g && g.enabled && String(g.enabled) !== 'no' && g.id === 'cod'
     );
     if (!enabled.length) return FALLBACK_PAYMENT_METHODS;
     return enabled.map((g) => ({
