@@ -760,7 +760,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
-  color: rgba(250, 246, 241, 0.85);
+  color: #fff;
   font-size: 0.9rem;
   font-weight: 600;
   word-break: break-word;
@@ -805,7 +805,7 @@ body {
 
 .site-footer__list a {
   display: inline-block;
-  color: var(--color-primary);
+  color: #fff;
   font-size: 0.9rem;
   position: relative;
   transition: color 0.2s ease, transform 0.2s ease;
@@ -859,13 +859,13 @@ body {
 }
 
 .site-footer__credit a {
-  color: var(--color-primary);
+  color: #fff;
   text-decoration: none;
-  transition: opacity 0.2s ease;
+  transition: color 0.2s ease;
 }
 
 .site-footer__credit a:hover {
-  opacity: 0.8;
+  color: var(--color-primary);
 }
 
 @media (max-width: 1080px) {
