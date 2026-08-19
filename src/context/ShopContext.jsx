@@ -9,6 +9,7 @@ import {
   applyCoupon as wpApplyCoupon,
   removeCoupon as wpRemoveCoupon,
   normalizeCartItems,
+  registerWpUser,
 } from '../lib/woo';
 
 const CartContext = createContext(null);
@@ -236,10 +237,15 @@ export function ShopProvider({ children }) {
   );
 
   const register = useCallback(
-    ({ name, email, password }) => {
+    async ({ name, email, password }) => {
       const users = load(USERS_KEY) || [];
       if (users.some((u) => u.email.toLowerCase() === email.toLowerCase())) {
         return { error: 'An account with that email already exists. Please sign in instead.' };
+      }
+      try {
+        await registerWpUser({ name, email, password });
+      } catch (err) {
+        return { error: err.message || 'Could not create your account.' };
       }
       const nextUsers = [...users, { name, email, password }];
       save(USERS_KEY, nextUsers);

@@ -810,3 +810,23 @@ export async function fetchPaymentMethods() {
     return FALLBACK_PAYMENT_METHODS;
   }
 }
+
+export async function registerWpUser({ name, email, password }) {
+  const res = await fetch(`${WP_REST_URL}/wp/v2/users`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name,
+      email,
+      username: email.split('@')[0],
+      password,
+    }),
+    credentials: 'omit',
+  });
+  if (!res.ok) {
+    const json = await res.json().catch(() => null);
+    const msg = (json && json.message) || 'Could not create your account.';
+    throw new Error(msg);
+  }
+  return res.json();
+}

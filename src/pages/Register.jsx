@@ -13,14 +13,15 @@ export default function Register() {
 
   if (user) return <Navigate to="/account" replace />;
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     if (form.password.length < 6) {
       setError('Your password should be at least 6 characters.');
       return;
     }
     setBusy(true);
-    const result = register(form);
+    setError(null);
+    const result = await register(form);
     setBusy(false);
     if (result.error) {
       setError(result.error);
