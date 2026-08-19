@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import { useShop } from '../context/ShopContext';
-import { formatPrice, formatTotal } from '../lib/woo';
+import { formatPrice, formatTotal, formatCartMoney } from '../lib/woo';
 import './basket.css';
 
 export default function Basket() {
-  const { cart, updateQty, removeFromCart, clearCart, cartTotal, applyCoupon, removeCoupon, appliedCoupons } = useShop();
+  const { cart, updateQty, removeFromCart, clearCart, cartTotal, applyCoupon, removeCoupon, appliedCoupons, wcCartTotals } = useShop();
   const [couponCode, setCouponCode] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState(null);
@@ -84,8 +84,18 @@ export default function Basket() {
           <div className="basket-summary">
             <div className="basket-summary__row">
               <span>Subtotal</span>
-              <strong>{formatTotal(cartTotal, cart[0]?.prices)}</strong>
+              <strong>
+                {wcCartTotals
+                  ? formatCartMoney(wcCartTotals.total_items, wcCartTotals)
+                  : formatTotal(cartTotal, cart[0]?.prices)}
+              </strong>
             </div>
+            {wcCartTotals && Number(wcCartTotals.total_discount) > 0 && (
+              <div className="basket-summary__row basket-summary__row--discount">
+                <span>Discount</span>
+                <strong>-{formatCartMoney(wcCartTotals.total_discount, wcCartTotals)}</strong>
+              </div>
+            )}
             <div className="basket-summary__row basket-summary__row--note">
               <span>Delivery</span>
               <span>Calculated at checkout</span>

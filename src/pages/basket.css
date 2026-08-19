@@ -168,7 +168,11 @@
 
 .basket-summary__row--note span:last-child {
   color: var(--color-ink-soft);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+}
+
+.basket-summary__row--discount strong {
+  color: #2a7d3f;
 }
 
 .basket-summary__hint {

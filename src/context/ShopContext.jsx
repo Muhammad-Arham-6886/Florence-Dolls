@@ -162,6 +162,8 @@ export function ShopProvider({ children }) {
 
   const clearCart = useCallback(() => {
     setCart([]);
+    setAppliedCoupons([]);
+    setWcCartTotals(null);
     const token = wpTokenRef.current;
     if (!wpActive || !token) return;
     clearCartItems(token)
@@ -170,14 +172,16 @@ export function ShopProvider({ children }) {
   }, [wpActive, adoptWpCart]);
 
   const [appliedCoupons, setAppliedCoupons] = useState([]);
+  const [wcCartTotals, setWcCartTotals] = useState(null);
 
   const applyCoupon = useCallback(
     async (code) => {
       const token = wpTokenRef.current;
-      if (!wpActive || !token) throw new Error('Could not connect to store.');
+      if (!token) throw new Error('Could not connect to store.');
       const { cart: wpCart } = await wpApplyCoupon(code, token);
       adoptWpCart(normalizeCartItems(wpCart.items));
       setAppliedCoupons(wpCart.coupons || []);
+      setWcCartTotals(wpCart.totals || null);
       notify(`Coupon "${code}" applied`);
       return wpCart;
     },
@@ -187,10 +191,11 @@ export function ShopProvider({ children }) {
   const removeCoupon = useCallback(
     async (code) => {
       const token = wpTokenRef.current;
-      if (!wpActive || !token) throw new Error('Could not connect to store.');
+      if (!token) throw new Error('Could not connect to store.');
       const { cart: wpCart } = await wpRemoveCoupon(code, token);
       adoptWpCart(normalizeCartItems(wpCart.items));
       setAppliedCoupons(wpCart.coupons || []);
+      setWcCartTotals(wpCart.totals || null);
       notify(`Coupon "${code}" removed`);
       return wpCart;
     },
@@ -279,6 +284,7 @@ export function ShopProvider({ children }) {
       updateQty,
       clearCart,
       appliedCoupons,
+      wcCartTotals,
       applyCoupon,
       removeCoupon,
       wishlist,
@@ -301,6 +307,7 @@ export function ShopProvider({ children }) {
       updateQty,
       clearCart,
       appliedCoupons,
+      wcCartTotals,
       applyCoupon,
       removeCoupon,
       wishlist,
