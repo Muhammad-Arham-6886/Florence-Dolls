@@ -600,7 +600,7 @@ export async function clearCartItems(token) {
 }
 
 export async function applyCoupon(code, token) {
-  const result = await cartRequestRaw('/coupon', {
+  const result = await cartRequestRaw('/apply-coupon', {
     method: 'POST',
     body: { code },
     token,
@@ -610,8 +610,8 @@ export async function applyCoupon(code, token) {
 }
 
 export async function removeCoupon(code, token) {
-  const result = await cartRequestRaw('/coupon', {
-    method: 'DELETE',
+  const result = await cartRequestRaw('/remove-coupon', {
+    method: 'POST',
     body: { code },
     token,
   });
