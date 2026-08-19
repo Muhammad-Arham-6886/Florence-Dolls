@@ -8,6 +8,7 @@ import {
   syncLocalCartToWp,
   applyCoupon as wpApplyCoupon,
   removeCoupon as wpRemoveCoupon,
+  normalizeCartItems,
 } from '../lib/woo';
 
 const CartContext = createContext(null);
@@ -175,7 +176,7 @@ export function ShopProvider({ children }) {
       const token = wpTokenRef.current;
       if (!wpActive || !token) throw new Error('Could not connect to store.');
       const { cart: wpCart } = await wpApplyCoupon(code, token);
-      adoptWpCart(wpCart.items);
+      adoptWpCart(normalizeCartItems(wpCart.items));
       setAppliedCoupons(wpCart.coupons || []);
       notify(`Coupon "${code}" applied`);
       return wpCart;
@@ -188,7 +189,7 @@ export function ShopProvider({ children }) {
       const token = wpTokenRef.current;
       if (!wpActive || !token) throw new Error('Could not connect to store.');
       const { cart: wpCart } = await wpRemoveCoupon(code, token);
-      adoptWpCart(wpCart.items);
+      adoptWpCart(normalizeCartItems(wpCart.items));
       setAppliedCoupons(wpCart.coupons || []);
       notify(`Coupon "${code}" removed`);
       return wpCart;
