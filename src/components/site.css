@@ -19,6 +19,7 @@ body {
 .announce {
   background-color: var(--color-heading);
   color: var(--color-background);
+  overflow: hidden;
 }
 
 .announce__inner {
@@ -31,15 +32,37 @@ body {
   padding-bottom: 0.3rem;
 }
 
-.announce__text {
-  margin: 0;
+.announce__marquee {
+  overflow: hidden;
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.announce__track {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  width: max-content;
+}
+
+.announce__content {
+  display: inline-flex;
+  align-items: center;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   font-size: 0.7rem;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex-shrink: 0;
+  padding-right: 0.5rem;
+}
+
+.announce__content strong {
+  color: #e8b84b;
+  font-weight: 700;
 }
 
 .announce__links {
@@ -61,22 +84,52 @@ body {
   font-weight: 600;
   font-size: 0.76rem;
   white-space: nowrap;
+  transition: color 0.2s ease;
 }
 
 .announce__link:hover {
   color: var(--color-accent);
 }
 
-@media (max-width: 900px) {
-  .announce__links {
+@keyframes announceMarquee {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@media (min-width: 901px) {
+  .announce__track .announce__content:nth-child(2) {
     display: none;
   }
+}
+
+@media (max-width: 900px) {
   .announce__inner {
-    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
   }
-  .announce__text {
-    text-align: center;
-    text-overflow: ellipsis;
+
+  .announce__marquee {
+    width: 100%;
+    mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent);
+  }
+
+  .announce__track {
+    animation: announceMarquee 20s linear infinite;
+    will-change: transform;
+  }
+
+  .announce__track:hover,
+  .announce__track:active {
+    animation-play-state: paused;
+  }
+
+  .announce__links {
+    display: none;
   }
 }
 
