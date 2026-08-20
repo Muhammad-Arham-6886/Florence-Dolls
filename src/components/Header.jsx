@@ -65,7 +65,7 @@ function Dropdown({ label, items }) {
   );
 }
 
-function CartBadge() {
+function CartBadge({ onNavigate }) {
   const { cart, cartCount, removeFromCart } = useShop();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -86,6 +86,11 @@ function CartBadge() {
   }, []);
 
   const unitPrice = (item) => Number(item.prices?.price || item.prices?.regular_price || 0) / 100;
+
+  const handleNav = () => {
+    setOpen(false);
+    if (onNavigate) onNavigate();
+  };
 
   return (
     <div className="hdr-cart" ref={ref}>
@@ -109,7 +114,7 @@ function CartBadge() {
             <ul className="hdr-cart__list">
               {cart.slice(0, 4).map((item) => (
                 <li className="hdr-cart__item" key={item.id}>
-                  <Link to={`/product/${item.slug}`} className="hdr-cart__item-link" onClick={() => setOpen(false)}>
+                  <Link to={`/product/${item.slug}`} className="hdr-cart__item-link" onClick={handleNav}>
                     {item.image ? (
                       <img className="hdr-cart__thumb" src={item.image} alt="" />
                     ) : (
@@ -137,7 +142,7 @@ function CartBadge() {
               <span className="hdr-cart__total-label">Subtotal</span>
               <span className="hdr-cart__total">{formatTotal(cart.reduce((s, i) => s + i.qty * unitPrice(i), 0), cart[0]?.prices)}</span>
             </div>
-            <Link to="/cart" className="btn btn-primary btn--sm hdr-cart__btn" onClick={() => setOpen(false)}>
+            <Link to="/cart" className="btn btn-primary btn--sm hdr-cart__btn" onClick={handleNav}>
               View basket
             </Link>
           </>
@@ -239,7 +244,7 @@ export default function Header() {
                   <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c4.4 0 8 2 8 4.5V21H4v-2.5c0-2.5 3.6-4.5 8-4.5Z" fill="currentColor" />
                 </svg>
               </Link>
-              <CartBadge />
+              <CartBadge onNavigate={() => setMenuOpen(false)} />
             </div>
           </nav>
 
