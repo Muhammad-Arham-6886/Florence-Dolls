@@ -1,4 +1,4 @@
-﻿/* ---------- Global overflow guard ---------- */
+/* ---------- Global overflow guard ---------- */
 html,
 body {
   overflow-x: clip;
@@ -878,6 +878,25 @@ body {
   }
 }
 
+@media (max-width: 768px) {
+  .container.site-footer__bottom-inner {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.5rem;
+  }
+
+  .site-footer__copyright {
+    text-align: center;
+    width: 100%;
+  }
+
+  .site-footer__credit {
+    text-align: center;
+    width: 100%;
+  }
+}
+
 @media (max-width: 560px) {
   .container.site-footer__inner {
     grid-template-columns: 1fr;
@@ -890,8 +909,8 @@ body {
   }
   .site-footer__bottom-inner {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 0.4rem;
+    align-items: center;
+    text-align: center;
+    gap: 0.5rem;
   }
 }
-
