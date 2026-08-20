@@ -140,7 +140,7 @@ export default function Home() {
               Reborn dolls, chosen to be <em>loved</em> for a very long time.
             </h1>
             <p className="hero__lead">
-              From genuine reborn babies to cherished Arias and Llorens collectables, we gather a shelf of pieces we would be proud to give ourselves \u2014 domestic stock, honest prices, and a personal hand behind every order.
+              From genuine reborn babies to cherished Arias and Llorens collectables, we gather a shelf of pieces we would be proud to give ourselves — domestic stock, honest prices, and a personal hand behind every order.
             </p>
             <div className="hero__actions">
               <Link to={`/shop/${CATEGORY_SLUGS.rebornDolls}`} className="btn btn-primary">
@@ -161,7 +161,7 @@ export default function Home() {
               <span className="hero__medallion-word">Arias &amp; Llorens</span>
               <span className="hero__medallion-ring" />
             </div>
-            <div className="hero__tile hero__tile--top">
+            <div className="hero__tile hero__tile--bottom">
               <span className="hero__tile-label">Held in the UK</span>
               <span className="hero__tile-value">{SITE.deliveryWindow}</span>
             </div>

@@ -62,10 +62,10 @@
 
 .hero__medallion {
   position: absolute;
-  bottom: 6%;
-  left: -6%;
-  width: 150px;
-  height: 150px;
+  top: 10%;
+  left: -4%;
+  width: 146px;
+  height: 146px;
   border-radius: 50%;
   background-color: var(--color-background);
   box-shadow: var(--shadow-card-hover);
@@ -76,18 +76,24 @@
   gap: 0.1rem;
   text-align: center;
   transform: rotate(-6deg);
+  z-index: 3;
+  transition: transform 0.3s ease;
+}
+
+.hero__medallion:hover {
+  transform: rotate(0deg) scale(1.04);
 }
 
 .hero__medallion-word {
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   line-height: 1.15;
   color: var(--color-heading);
 }
 
 .hero__medallion-word:last-of-type {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: var(--color-ink-soft);
 }
 
@@ -100,7 +106,7 @@
 
 .hero__tile {
   position: absolute;
-  top: 10%;
+  bottom: 6%;
   right: -4%;
   background-color: var(--color-heading);
   color: var(--color-background);
@@ -110,6 +116,13 @@
   display: flex;
   flex-direction: column;
   line-height: 1.3;
+  z-index: 3;
+  border: 1px solid rgba(212, 162, 76, 0.25);
+  transition: transform 0.3s ease;
+}
+
+.hero__tile:hover {
+  transform: translateY(-3px);
 }
 
 .hero__tile-label {
@@ -178,13 +191,16 @@
     width: 100%;
   }
   .hero__medallion {
-    left: -2%;
-    bottom: 4%;
-    width: 120px;
-    height: 120px;
+    top: 7%;
+    left: 2%;
+    bottom: auto;
+    width: 118px;
+    height: 118px;
   }
   .hero__tile {
-    right: 0;
+    bottom: 4%;
+    right: 2%;
+    top: auto;
   }
 }
 
@@ -199,16 +215,29 @@
     border-bottom: 1px solid var(--color-border);
   }
   .hero__medallion {
-    width: 104px;
-    height: 104px;
-    left: -8px;
-    bottom: 3%;
+    width: 102px;
+    height: 102px;
+    left: 8px;
+    top: 7%;
+    bottom: auto;
   }
   .hero__medallion-word {
-    font-size: 0.92rem;
+    font-size: 0.85rem;
+  }
+  .hero__medallion-word:last-of-type {
+    font-size: 0.7rem;
   }
   .hero__tile {
-    right: -8px;
+    bottom: 4%;
+    right: 8px;
+    top: auto;
+    padding: 0.75rem 1rem;
+  }
+  .hero__tile-label {
+    font-size: 0.62rem;
+  }
+  .hero__tile-value {
+    font-size: 1.15rem;
   }
 }
 

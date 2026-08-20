@@ -43,7 +43,7 @@ export function ShopProvider({ children }) {
   const [wishlist, setWishlist] = useState(() => load(WISH_KEY) || []);
   const [user, setUser] = useState(() => load(USER_KEY) || null);
   const [toast, setToast] = useState(null);
-  const [toastTimer, setToastTimer] = useState(null);
+  const toastTimerRef = useRef(null);
   const [wpActive, setWpActive] = useState(false);
   const wpTokenRef = useRef(null);
   const cartRef = useRef(cart);
@@ -91,15 +91,18 @@ export function ShopProvider({ children }) {
     };
   }, []);
 
-  const notify = useCallback(
-    (message) => {
-      setToast(message);
-      if (toastTimer) clearTimeout(toastTimer);
-      const t = setTimeout(() => setToast(null), 2600);
-      setToastTimer(t);
-    },
-    [toastTimer]
-  );
+  const closeToast = useCallback(() => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToast(null);
+  }, []);
+
+  const notify = useCallback((message) => {
+    setToast(message);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => {
+      setToast(null);
+    }, 3500);
+  }, []);
 
   const adoptWpCart = useCallback((items) => {
     setCart(items && items.length ? items : []);
@@ -306,6 +309,7 @@ export function ShopProvider({ children }) {
       logout,
       toast,
       notify,
+      closeToast,
     }),
     [
       cart,
@@ -329,6 +333,7 @@ export function ShopProvider({ children }) {
       logout,
       toast,
       notify,
+      closeToast,
     ]
   );
 
