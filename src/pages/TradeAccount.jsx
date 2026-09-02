@@ -14,15 +14,40 @@ export default function TradeAccount() {
     message: '',
   });
 
+  const [status, setStatus] = useState('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
   const update = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const subject = encodeURIComponent(`Trade account request - ${form.businessName || form.contactName}`);
-    const body = encodeURIComponent(
-      `Business name: ${form.businessName}\nContact: ${form.contactName}\nEmail: ${form.email}\nPhone: ${form.phone}\nWebsite: ${form.website}\n\nNotes:\n${form.message}`
-    );
-    window.location.href = `mailto:${SITE.email}?subject=${subject}&body=${body}`;
+    setStatus('submitting');
+    setErrorMessage('');
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, type: 'trade' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok) {
+        setStatus('success');
+        setForm({
+          businessName: '',
+          contactName: '',
+          email: '',
+          phone: '',
+          website: '',
+          message: '',
+        });
+      } else {
+        setStatus('error');
+        setErrorMessage(data.error || `Could not submit request. Please email us directly at ${SITE.email}.`);
+      }
+    } catch {
+      setStatus('error');
+      setErrorMessage(`Network error. Please try again or email us directly at ${SITE.email}.`);
+    }
   };
 
   return (
@@ -35,39 +60,64 @@ export default function TradeAccount() {
       </p>
 
       <div className="trade-grid">
-        <form className="contact-form" onSubmit={handleSubmit}>
-          <label className="field">
-            <span className="field__label">Business name</span>
-            <input type="text" name="businessName" value={form.businessName} onChange={update} required />
-          </label>
+        {status === 'success' ? (
+          <div className="form-success-banner">
+            <h3>Trade application received!</h3>
+            <p>
+              Thank you for applying. Our wholesale team has received your details and will be in touch with trade pricing within one working day.
+            </p>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              style={{ alignSelf: 'flex-start', marginTop: '0.5rem' }}
+              onClick={() => setStatus('idle')}
+            >
+              Submit another inquiry
+            </button>
+          </div>
+        ) : (
+          <form className="contact-form" onSubmit={handleSubmit}>
+            {status === 'error' && (
+              <div className="form-error-banner" role="alert">
+                {errorMessage}
+              </div>
+            )}
 
-          <label className="field">
-            <span className="field__label">Contact name</span>
-            <input type="text" name="contactName" value={form.contactName} onChange={update} required />
-          </label>
+            <label className="field">
+              <span className="field__label">Business name</span>
+              <input type="text" name="businessName" value={form.businessName} onChange={update} required />
+            </label>
 
-          <label className="field">
-            <span className="field__label">Email address</span>
-            <input type="email" name="email" value={form.email} onChange={update} required />
-          </label>
+            <label className="field">
+              <span className="field__label">Contact name</span>
+              <input type="text" name="contactName" value={form.contactName} onChange={update} required />
+            </label>
 
-          <label className="field">
-            <span className="field__label">Phone</span>
-            <input type="tel" name="phone" value={form.phone} onChange={update} />
-          </label>
+            <label className="field">
+              <span className="field__label">Email address</span>
+              <input type="email" name="email" value={form.email} onChange={update} required />
+            </label>
 
-          <label className="field">
-            <span className="field__label">Website (optional)</span>
-            <input type="url" name="website" value={form.website} onChange={update} />
-          </label>
+            <label className="field">
+              <span className="field__label">Phone</span>
+              <input type="tel" name="phone" value={form.phone} onChange={update} />
+            </label>
 
-          <label className="field">
-            <span className="field__label">A little about your business</span>
-            <textarea name="message" rows={5} value={form.message} onChange={update} placeholder="For example: independent gift shop, collector, online boutique..." />
-          </label>
+            <label className="field">
+              <span className="field__label">Website (optional)</span>
+              <input type="url" name="website" value={form.website} onChange={update} />
+            </label>
 
-          <button type="submit" className="btn btn-primary">Request trade terms</button>
-        </form>
+            <label className="field">
+              <span className="field__label">A little about your business</span>
+              <textarea name="message" rows={5} value={form.message} onChange={update} placeholder="For example: independent gift shop, collector, online boutique..." />
+            </label>
+
+            <button type="submit" className="btn btn-primary" disabled={status === 'submitting'}>
+              {status === 'submitting' ? 'Submitting request...' : 'Request trade terms'}
+            </button>
+          </form>
+        )}
 
         <aside className="contact-details">
           <h2>What trade customers ask us</h2>

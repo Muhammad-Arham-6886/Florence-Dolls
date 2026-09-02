@@ -6,16 +6,35 @@ import './forms.css';
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: 'General enquiry', message: '' });
+  const [status, setStatus] = useState('idle'); // 'idle' | 'submitting' | 'success' | 'error'
+  const [errorMessage, setErrorMessage] = useState('');
 
   const update = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const subject = encodeURIComponent(`${form.subject} - ${form.name}`);
-    const body = encodeURIComponent(
-      `Name: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\n\n${form.message}`
-    );
-    window.location.href = `mailto:${SITE.email}?subject=${subject}&body=${body}`;
+    setStatus('submitting');
+    setErrorMessage('');
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data.ok) {
+        setStatus('success');
+        setForm({ name: '', email: '', phone: '', subject: 'General enquiry', message: '' });
+      } else {
+        setStatus('error');
+        setErrorMessage(data.error || `Could not send enquiry. Please email us directly at ${SITE.email}.`);
+      }
+    } catch {
+      setStatus('error');
+      setErrorMessage(`Network error. Please try again or email us directly at ${SITE.email}.`);
+    }
   };
 
   return (
@@ -28,39 +47,65 @@ export default function Contact() {
       </p>
 
       <div className="contact-grid">
-        <form className="contact-form" onSubmit={handleSubmit}>
-          <label className="field">
-            <span className="field__label">Your name</span>
-            <input type="text" name="name" value={form.name} onChange={update} required />
-          </label>
+        {status === 'success' ? (
+          <div className="form-success-banner">
+            <h3>Thank you for reaching out!</h3>
+            <p>
+              Your message has been sent to our team at <strong>{SITE.email}</strong>.
+              A family member will review your enquiry and get back to you within one working day.
+            </p>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              style={{ alignSelf: 'flex-start', marginTop: '0.5rem' }}
+              onClick={() => setStatus('idle')}
+            >
+              Send another message
+            </button>
+          </div>
+        ) : (
+          <form className="contact-form" onSubmit={handleSubmit}>
+            {status === 'error' && (
+              <div className="form-error-banner" role="alert">
+                {errorMessage}
+              </div>
+            )}
 
-          <label className="field">
-            <span className="field__label">Email address</span>
-            <input type="email" name="email" value={form.email} onChange={update} required />
-          </label>
+            <label className="field">
+              <span className="field__label">Your name</span>
+              <input type="text" name="name" value={form.name} onChange={update} required />
+            </label>
 
-          <label className="field">
-            <span className="field__label">Phone (optional)</span>
-            <input type="tel" name="phone" value={form.phone} onChange={update} />
-          </label>
+            <label className="field">
+              <span className="field__label">Email address</span>
+              <input type="email" name="email" value={form.email} onChange={update} required />
+            </label>
 
-          <label className="field">
-            <span className="field__label">Subject</span>
-            <select name="subject" value={form.subject} onChange={update}>
-              <option>General enquiry</option>
-              <option>An existing order</option>
-              <option>Replacement or returns</option>
-              <option>Wholesale &amp; trade</option>
-            </select>
-          </label>
+            <label className="field">
+              <span className="field__label">Phone (optional)</span>
+              <input type="tel" name="phone" value={form.phone} onChange={update} />
+            </label>
 
-          <label className="field">
-            <span className="field__label">Your message</span>
-            <textarea name="message" rows={6} value={form.message} onChange={update} required />
-          </label>
+            <label className="field">
+              <span className="field__label">Subject</span>
+              <select name="subject" value={form.subject} onChange={update}>
+                <option>General enquiry</option>
+                <option>An existing order</option>
+                <option>Replacement or returns</option>
+                <option>Wholesale &amp; trade</option>
+              </select>
+            </label>
 
-          <button type="submit" className="btn btn-primary">Send enquiry</button>
-        </form>
+            <label className="field">
+              <span className="field__label">Your message</span>
+              <textarea name="message" rows={6} value={form.message} onChange={update} required />
+            </label>
+
+            <button type="submit" className="btn btn-primary" disabled={status === 'submitting'}>
+              {status === 'submitting' ? 'Sending enquiry...' : 'Send enquiry'}
+            </button>
+          </form>
+        )}
 
         <aside className="contact-details">
           <h2>Other ways to reach us</h2>
