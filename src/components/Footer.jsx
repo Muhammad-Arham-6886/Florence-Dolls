@@ -15,10 +15,7 @@ export default function Footer() {
           <p className="site-footer__tagline">
             Genuine reborn dolls, Arias &amp; Llorens collectables and boutique accessories, from a small UK family business.
           </p>
-          <div className="site-footer__contact">
-            <a className="site-footer__contact-link" href={`mailto:${SITE.email}`}>{SITE.email}</a>
-            <a className="site-footer__contact-link" href={`tel:${SITE.phoneIntl}`}>{SITE.phone}</a>
-          </div>
+
         </div>
 
         <div className="site-footer__col">
