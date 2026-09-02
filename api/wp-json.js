@@ -45,7 +45,8 @@ export default async function handler(req, res) {
 
   const wpUser = process.env.WP_REST_USER;
   const wpPassword = process.env.WP_REST_PASSWORD;
-  if (wpUser && wpPassword) {
+  const isStoreApi = apiPath.startsWith('wc/store');
+  if (wpUser && wpPassword && !isStoreApi) {
     headers['Authorization'] =
       'Basic ' + Buffer.from(`${wpUser}:${wpPassword}`).toString('base64');
   }

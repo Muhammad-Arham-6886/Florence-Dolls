@@ -81,17 +81,13 @@ export default function Checkout() {
     const loadCart = async () => {
       try {
         const token = getCartToken();
-        // Checkout must operate on the basket the customer actually sees. If the
-        // local basket has items, make the WordPress cart match it first (the
-        // two can drift apart when a session expires or a sync fails); otherwise
-        // just read whatever WordPress has.
         const { cart: nextCart, token: nextToken } =
           shopCart && shopCart.length
             ? await syncLocalCartToWp(shopCart, token)
             : await fetchCheckoutCart(token);
         if (cancelled) return;
         setCart(nextCart);
-        setToken(nextToken);
+        setToken(nextToken || token || getCartToken());
       } catch (err) {
         if (!cancelled) setCartError(err.message || 'Could not load your basket.');
       }
@@ -114,11 +110,13 @@ export default function Checkout() {
 
   const handleApplyCoupon = useCallback(async () => {
     if (!couponCode.trim()) return;
+    const activeToken = token || getCartToken();
     setCouponLoading(true);
     setCouponError(null);
     try {
-      const updatedCart = await wpApplyCoupon(couponCode.trim(), token);
+      const updatedCart = await wpApplyCoupon(couponCode.trim(), activeToken);
       setCart(updatedCart.cart);
+      if (updatedCart.token) setToken(updatedCart.token);
       setCouponCode('');
     } catch (err) {
       const msg = err.message || 'Invalid coupon code.';
@@ -129,9 +127,11 @@ export default function Checkout() {
   }, [couponCode, token]);
 
   const handleRemoveCoupon = useCallback(async (code) => {
+    const activeToken = token || getCartToken();
     try {
-      const updatedCart = await wpRemoveCoupon(code, token);
+      const updatedCart = await wpRemoveCoupon(code, activeToken);
       setCart(updatedCart.cart);
+      if (updatedCart.token) setToken(updatedCart.token);
     } catch (err) {
       setCouponError(err.message || 'Could not remove coupon.');
     }
@@ -149,8 +149,9 @@ export default function Checkout() {
         const next = options.find((r) => r.rate_id === selectedRate) || options[0];
         setSelectedRate(next.rate_id);
         try {
-          const { cart: selected } = await selectCheckoutShippingRate(next.rate_id, tok);
+          const { cart: selected, token: updatedToken } = await selectCheckoutShippingRate(next.rate_id, tok);
           setCart(selected);
+          if (updatedToken) setToken(updatedToken);
         } catch {
           /* totals simply stay without shipping */
         }
@@ -163,7 +164,18 @@ export default function Checkout() {
   );
 
   const getDeliveryOptions = useCallback(async () => {
-    if (!token) {
+    let activeToken = token || getCartToken();
+    if (!activeToken) {
+      try {
+        const fresh = await fetchCheckoutCart();
+        activeToken = fresh.token || getCartToken();
+        if (fresh.cart) setCart(fresh.cart);
+        if (activeToken) setToken(activeToken);
+      } catch {
+        /* fallback */
+      }
+    }
+    if (!activeToken) {
       setRatesState('error');
       setNotice('We could not connect to our store. Please try again.');
       return;
@@ -175,13 +187,15 @@ export default function Checkout() {
       const billingAddress = sameAsBilling
         ? { ...shipping, email: contact.email, phone: contact.phone }
         : { ...billing, email: contact.email, phone: contact.phone };
-      const { cart: nextCart } = await updateCheckoutCustomer(
+      const { cart: nextCart, token: updatedToken } = await updateCheckoutCustomer(
         billingAddress,
         { ...shipping, email: contact.email, phone: contact.phone },
-        token
+        activeToken
       );
+      const currentToken = updatedToken || activeToken;
+      if (updatedToken) setToken(updatedToken);
       setSyncedKey(JSON.stringify({ shipping, contactKey, sameAsBilling }));
-      await applyShippingOptions(nextCart, token);
+      await applyShippingOptions(nextCart, currentToken);
     } catch (err) {
       setRatesState('error');
       setNotice(err.message || 'We could not calculate delivery for that address.');
@@ -198,10 +212,12 @@ export default function Checkout() {
   const handleSelectRate = useCallback(
     async (rateId) => {
       setSelectedRate(rateId);
-      if (!token) return;
+      const activeToken = token || getCartToken();
+      if (!activeToken) return;
       try {
-        const { cart: nextCart } = await selectCheckoutShippingRate(rateId, token);
+        const { cart: nextCart, token: updatedToken } = await selectCheckoutShippingRate(rateId, activeToken);
         setCart(nextCart);
+        if (updatedToken) setToken(updatedToken);
       } catch (err) {
         setNotice(err.message || 'Could not select that delivery option.');
       }
@@ -263,11 +279,12 @@ export default function Checkout() {
           };
       setPlacing(true);
       try {
+        const activeToken = token || getCartToken();
         const order = await placeCheckoutOrder({
           billingAddress,
           shippingAddress,
           paymentMethod,
-          token,
+          token: activeToken,
         });
         const result = order && order.payment_result;
         const snapshotItems = [...(cart && cart.items) || []];

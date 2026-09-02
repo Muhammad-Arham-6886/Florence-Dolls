@@ -670,7 +670,7 @@ async function cartRequestRaw(path, { method = 'GET', body, token } = {}) {
   let res = await fetch(`${STORE_URL}/cart${path}`, init);
   let json = res.status === 204 ? null : await res.json().catch(() => null);
   if (isNonceProblem(res, json)) {
-    session = fetchFreshCartSession();
+    session = await fetchFreshCartSession();
     headers = {};
     applySessionHeaders(headers, session);
     if (body) headers['Content-Type'] = 'application/json';
@@ -679,7 +679,7 @@ async function cartRequestRaw(path, { method = 'GET', body, token } = {}) {
     res = await fetch(`${STORE_URL}/cart${path}`, init);
     json = res.status === 204 ? null : await res.json().catch(() => null);
   }
-  sessionFromResponse(res, session.token);
+  session = sessionFromResponse(res, session.token);
   if (!res.ok) {
     const err = new Error((json && json.message) || `WooCommerce cart API ${res.status}`);
     err.code = (json && json.code) || res.status;
@@ -736,11 +736,11 @@ export async function placeCheckoutOrder({ billingAddress, shippingAddress, paym
   let res = await fetch(`${STORE_URL}/checkout`, build());
   let json = await res.json().catch(() => null);
   if (isNonceProblem(res, json)) {
-    session = fetchFreshCartSession();
+    session = await fetchFreshCartSession();
     res = await fetch(`${STORE_URL}/checkout`, build());
     json = await res.json().catch(() => null);
   }
-  sessionFromResponse(res, session.token);
+  session = sessionFromResponse(res, session.token);
   if (!res.ok) {
     const err = new Error((json && json.message) || `WooCommerce checkout ${res.status}`);
     err.code = (json && json.code) || res.status;
